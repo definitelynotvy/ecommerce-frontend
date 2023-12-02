@@ -3,9 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import { createProductAction } from "../../../redux/slices/products/productSlices";
+
 import ErrorMsg from "../../ErrorMsg/ErrorMsg";
 import LoadingComponent from "../../LoadingComp/LoadingComponent";
 import SuccessMsg from "../../SuccessMsg/SuccessMsg";
+
 import { fetchCategoryAction } from "../../../redux/slices/categories/categoriesSlice";
 import { fetchBrandsAction } from "../../../redux/slices/categories/brandsSlice";
 import { fetchColorsAction } from "../../../redux/slices/categories/colorsSclice";
@@ -14,6 +16,25 @@ const animatedComponents = makeAnimated();
 
 export default function AddProduct() {
   const dispatch =useDispatch();
+  //files
+  const [files, setFiles ] = useState([]);
+  const [fileErrs, setFileErrs ] = useState([]);
+  //file handlechange
+  const fileHandleChange = (event) => {
+    const newFiles = Array.from(event.target.files);
+    //validation
+    const newErrs = [];
+    newFiles.forEach((file) => {
+      if (file?.size > 1000000) {
+        newErrs.push(`${file?.name} is too large`);
+      }
+      if (!file?.type?.startsWith("image/")) {
+        newErrs.push(`${file?.name} is not an image`);
+      }
+    });
+    setFiles(newFiles);
+    setFileErrs(newErrs);
+  }
   //Sizes
   const sizes = ["S","M","L","XL","XXL"];
   const [sizeOption, setSizeOption] = useState([]);
@@ -34,7 +55,7 @@ export default function AddProduct() {
   },[dispatch]);
 
   //select data from store
-  const {categories,loading,error}=useSelector((state)=>state?.categories?.categories);
+  const {categories}=useSelector((state)=>state?.categories?.categories);
 
   //brands
   useEffect(()=>{
@@ -63,14 +84,7 @@ export default function AddProduct() {
     };
   });
 
-  
-  
 
-
-  let
-    isAdded;
-
-  
 
   //---form data---
   const [formData, setFormData] = useState({
@@ -80,7 +94,6 @@ export default function AddProduct() {
     sizes: "",
     brand: "",
     colors: "",
-    images: "",
     price: "",
     totalQty: "",
   });
@@ -90,31 +103,46 @@ export default function AddProduct() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  
+  //get product from store
+  const { product, isAdded, loading, error } = useSelector(
+    (state) => state?.products
+  );
+
   //onSubmit
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+    console.log(fileErrs);
     //dispatch
-    dispatch(createProductAction({formData}));
-    console.log(formData);
+    dispatch(
+      createProductAction({
+        ...formData,
+        files,
+        colors: colorsOption?.map((color) => color.label),
+        sizes: sizeOption?.map((size) => size?.label),
+    }));
+    //console.log(formData);
     //reset form data
-   /* setFormData({
-      name: "",
-      description: "",
-      category: "",
-      sizes: "",
-      brand: "",
-      colors: "",
-      images: "",
-      price: "",
-      totalQty: "",
+    setFormData({
+        name: "",
+        description: "",
+        category: "",
+        sizes: "",
+        brand: "",
+        colors: "",
+        images: "",
+        price: "",
+        totalQty: "",
     });
-    */
+    
   };
 
   return (
     <>
       {error && <ErrorMsg message={error?.message} />}
+      {fileErrs?.length > 0 && (
+        <ErrorMsg message="file too large or upload an image" />
+      )}
       {isAdded && <SuccessMsg message="Product Added Successfully" />}
       <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -126,6 +154,7 @@ export default function AddProduct() {
               Manage Products
             </p>
           </p>
+          
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -252,8 +281,9 @@ export default function AddProduct() {
                           <span>Upload files</span>
                           <input
                             name="images"
+                            multiple
                             value={formData.images}
-                            onChange={handleOnChange}
+                            onChange={fileHandleChange}
                             type="file"
                           />
                         </label>
@@ -319,6 +349,7 @@ export default function AddProduct() {
                   <LoadingComponent />
                 ) : (
                   <button
+                    disabled={fileErrs?.length > 0}
                     type="submit"
                     className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                     Add Product

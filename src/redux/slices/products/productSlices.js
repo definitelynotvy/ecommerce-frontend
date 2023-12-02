@@ -1,5 +1,6 @@
 import axios from "axios";
 import baseURL from "../../../utils/baseURL";
+import { resetErrAction, resetSuccessAction } from "../globalActions/globalActions";
 const {createAsyncThunk, createSlice} = require("@reduxjs/toolkit");
 
 // initialState
@@ -16,27 +17,104 @@ const initialState={
 export const createProductAction = createAsyncThunk(
     'product/create',
     async(payload, {rejectWithValue, getState, dispatch})=>{
+        console.log(payload);
         try{
             const{
-                name,description,category,sizes,brand,colors,price}=payload;
+                name,
+                description,
+                category,
+                sizes,
+                brand,
+                colors,
+                price,
+                totalQty,
+                files,
+            }=payload;
             //make request
             const token =getState().users?.userAuth?.userInfo?.token;
             const config ={
                 headers:{
                     Authorization:`Bearer ${token}`,
+                    "Content-Type": "multipart/form-data",
                 },
             };
+
+            //FormData
+            const formData = new FormData();
+            formData.append("name", name);
+            formData.append("description", description);
+            formData.append("category", category);
+
+            formData.append("brand", brand);
+            formData.append("price", price);
+            formData.append("totalQty", totalQty);
+            
+            sizes.forEach((size) => {
+                formData.append("sizes", size);
+              });
+              colors.forEach((color) => {
+                formData.append("colors", color);
+              });
+        
+              files.forEach((file) => {
+                formData.append("files", file);
+              });
+
             //Token - authenticated
             //Images
 
-            const {data} = await axios.post(`${baseURL}/products`,{
-                name,description,category,sizes,brand,colors,price,
-            },config
+            const {data} = await axios.post(
+                `${baseURL}/products`,
+                formData,
+                config
             );
             return data;
         } catch(error){
             return rejectWithValue(error?.response?.data);
         }
+    }
+);
+
+//fetch products action
+export const fetchProductsAction = createAsyncThunk(
+    "product/list",
+    async (payload, { rejectWithValue, getState, dispatch }) => {
+      //console.log(url);
+      try {
+        const token = getState()?.users?.userAuth?.userInfo?.token;
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+  
+        const { data } = await axios.get(`${baseURL}/products`, config);
+        return data;
+      } catch (error) {
+        return rejectWithValue(error?.response?.data);
+      }
+    }
+);
+
+//fetch product action
+export const fetchProductAction = createAsyncThunk(
+    "product/details",
+    async (productId, { rejectWithValue, getState, dispatch }) => {
+      //console.log(url);
+      try {
+        const token = getState()?.users?.userAuth?.userInfo?.token;
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+  
+        const { data } = await axios.get(`${baseURL}/products/${productId}`,
+         config);
+        return data;
+      } catch (error) {
+        return rejectWithValue(error?.response?.data);
+      }
     }
 );
 
@@ -59,6 +137,46 @@ const productSlice = createSlice({
             state.products=null;
             state.isAdded=false;
             state.error=action.payload;
+        });
+        //fetch all
+        builder.addCase(fetchProductsAction.pending, (state) => {
+            state.loading = true;
+        });
+        builder.addCase(fetchProductsAction.fulfilled, (state, action) => {
+            state.loading = false;
+            state.products = action.payload;
+            state.isAdded = true;
+        });
+        builder.addCase(fetchProductsAction.rejected, (state, action) => {
+            state.loading = false;
+            state.products = null;
+            state.isAdded = false;
+            state.error = action.payload;
+        });
+
+        //fetch all
+        builder.addCase(fetchProductAction.pending, (state) => {
+            state.loading = true;
+        });
+        builder.addCase(fetchProductAction.fulfilled, (state, action) => {
+            state.loading = false;
+            state.product = action.payload;
+            state.isAdded = true;
+        });
+        builder.addCase(fetchProductAction.rejected, (state, action) => {
+            state.loading = false;
+            state.product = null;
+            state.isAdded = false;
+            state.error = action.payload;
+        });
+
+        //reset error
+        builder.addCase(resetErrAction.pending, (state, action) => {
+            state.error = null;
+        });
+        //reset success
+        builder.addCase(resetSuccessAction.pending, (state, action) => {
+            state.isAdded = false;
         });
     },
 });

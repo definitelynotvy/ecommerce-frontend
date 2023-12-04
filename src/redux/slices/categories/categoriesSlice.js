@@ -1,5 +1,6 @@
 import axios from "axios";
 import baseURL from "../../../utils/baseURL";
+import { resetErrAction, resetSuccessAction } from "../globalActions/globalActions";
 const {createAsyncThunk, createSlice} = require("@reduxjs/toolkit");
 
 // initialState
@@ -16,22 +17,25 @@ const initialState={
 export const createCategoryAction = createAsyncThunk(
     'category/create',
     async(payload, {rejectWithValue, getState, dispatch})=>{
+        console.log(payload);
         try{
-            const{
-                name}=payload;
-            //make request
+            const{name, file}=payload;
+            //fromData
+            const formData = new FormData();
+            formData.append('name',name);
+            formData.append('file',file);
+            //Token - authenticated
             const token =getState().users?.userAuth?.userInfo?.token;
             const config ={
                 headers:{
                     Authorization:`Bearer ${token}`,
                 },
             };
-            //Token - authenticated
+            
             //Images
 
-            const {data} = await axios.post(`${baseURL}/categories`,{
-                name
-            },config
+            const {data} = await axios.post(`${baseURL}/categories`,
+            formData,config
             );
             return data;
         } catch(error){
@@ -80,13 +84,20 @@ const categorySlice = createSlice({
         builder.addCase(fetchCategoryAction.fulfilled,(state,action)=>{
             state.loading=false;
             state.categories=action.payload;
-            state.isAdded=true;
+           
         });
         builder.addCase(fetchCategoryAction.rejected,(state,action)=>{
             state.loading=false;
             state.categories=null;
-            state.isAdded=false;
             state.error=action.payload;
+        });
+        //Reset err
+        builder.addCase(resetErrAction.pending,(state,action)=>{
+            state.error=null
+        });
+        //Reset success
+        builder.addCase(resetSuccessAction.pending,(state,action)=>{
+            state.isAdded=false;
         });
     },
 });

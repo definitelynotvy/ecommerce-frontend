@@ -16,8 +16,7 @@ const initialState={
 //create product action
 export const createProductAction = createAsyncThunk(
     'product/create',
-    async(payload, {rejectWithValue, getState, dispatch})=>{
-        console.log(payload);
+    async(payload, {rejectWithValue, getState, dispatch})=>{ 
         try{
             const{
                 name,
@@ -78,8 +77,8 @@ export const createProductAction = createAsyncThunk(
 //fetch products action
 export const fetchProductsAction = createAsyncThunk(
     "product/list",
-    async (payload, { rejectWithValue, getState, dispatch }) => {
-      //console.log(url);
+    async ({url}, { rejectWithValue, getState, dispatch }) => {
+      console.log(url);
       try {
         const token = getState()?.users?.userAuth?.userInfo?.token;
         const config = {
@@ -88,7 +87,7 @@ export const fetchProductsAction = createAsyncThunk(
           },
         };
   
-        const { data } = await axios.get(`${baseURL}/products`, config);
+        const { data } = await axios.get(`${url}`, config);
         return data;
       } catch (error) {
         return rejectWithValue(error?.response?.data);

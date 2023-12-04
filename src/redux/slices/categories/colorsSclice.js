@@ -1,5 +1,6 @@
 import axios from "axios";
 import baseURL from "../../../utils/baseURL";
+import { resetErrAction, resetSuccessAction } from "../globalActions/globalActions";
 const {createAsyncThunk, createSlice} = require("@reduxjs/toolkit");
 
 // initialState
@@ -16,9 +17,8 @@ const initialState={
 //create color action
 export const createColorAction = createAsyncThunk(
     'color/create',
-    async(payload, {rejectWithValue, getState, dispatch})=>{
+    async(name, {rejectWithValue, getState, dispatch})=>{
         try{
-            const{name}=payload;
             //make request
             const token =getState().users?.userAuth?.userInfo?.token;
             const config ={
@@ -87,6 +87,16 @@ const colorsSlice = createSlice({
             state.colors=null;
             state.isAdded=false;
             state.error=action.payload;
+        });
+        //reset err action
+        builder.addCase(resetErrAction.pending,(state,action)=>{
+            state.isAdded=false;
+            state.error=null;
+        });
+        //reset success action
+        builder.addCase(resetSuccessAction.pending,(state,action)=>{
+            state.isAdded=false;
+            state.error=null;
         });
     },
 });

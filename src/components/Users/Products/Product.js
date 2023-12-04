@@ -8,6 +8,9 @@ import { StarIcon } from "@heroicons/react/20/solid";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProductAction } from "../../../redux/slices/products/productSlices";
+import { addOrderToCartaction, getCartItemsFromLocalStorageAction } from "../../../redux/slices/cart/cartSlices";
+import Swal from "sweetalert2";
+
 const product = {
   name: "Basic Tee",
   price: "$35",
@@ -89,13 +92,12 @@ export default function Product() {
   const dispatch = useDispatch();
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
-
-  //Add to cart handler
-  const addToCartHandler = (item) => {};
+  
+  
   let productDetails = {};
-  let productColor;
-  let productSize;
-  let cartItems = [];
+  // let productColor;
+  // let productSize;
+  //let cartItems = [];
 
 
   //get id from params
@@ -104,7 +106,68 @@ export default function Product() {
     dispatch(fetchProductAction(id));
   }, [id]);
   //get data from store
-  const {loading,error,product:{product}} = useSelector((state) => state?.products);
+  const {
+    loading,
+    error,
+    product:{product}
+  } = useSelector((state) => state?.products);
+  //get cart items
+  useEffect(()=>{
+    dispatch(getCartItemsFromLocalStorageAction());
+  }, []);
+  //get data from store
+  const { cartItems } = useSelector((state) => state?.carts);
+  const productExists = cartItems?.find(
+    (item) => item?._id?.toString() === product?._id.toString()
+  );
+
+  //Add to cart handler
+  const addToCartHandler = (item) => {
+    //check if product is in cart
+    if (productExists) {
+      return Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "This product is already in cart",
+      });
+    }
+    //check if color/size selected
+    if (selectedColor === "") {
+      return Swal.fire({
+        icon: "error",
+        title: "Oops...!",
+        text: "Please select product color",
+      });
+    }
+    if (selectedSize === "") {
+      return Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please select  product size",
+      });
+    }
+    dispatch(
+      addOrderToCartaction({
+        _id: product?._id,
+        name: product?.name,
+        qty: 1,
+        price: product?.price,
+        description: product?.description,
+        color: selectedColor,
+        size: selectedSize,
+        image: product?.images[0],
+        totalPrice: product?.price,
+        qtyLeft: product?.qtyLeft,
+      })
+    );
+    Swal.fire({
+      icon: "success",
+      title: "Good Job",
+      text: "Product added to cart successfully",
+    });
+    return dispatch(getCartItemsFromLocalStorageAction());
+  };
+  
 
   return (
     <div className="bg-white">

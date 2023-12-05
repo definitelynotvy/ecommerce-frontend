@@ -10,7 +10,7 @@ import SuccessMsg from "../../SuccessMsg/SuccessMsg";
 
 import { fetchCategoryAction } from "../../../redux/slices/categories/categoriesSlice";
 import { fetchBrandsAction } from "../../../redux/slices/categories/brandsSlice";
-import { fetchColorsAction } from "../../../redux/slices/categories/colorsSclice";
+import { fetchColorsAction } from "../../../redux/slices/categories/colorsSlice";
 //animated components for react-select
 const animatedComponents = makeAnimated();
 

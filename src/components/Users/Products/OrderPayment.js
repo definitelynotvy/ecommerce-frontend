@@ -1,17 +1,51 @@
+import { useEffect, useState } from "react";
 import AddShippingAddress from "../Forms/AddShippingAddress";
+import { useDispatch, useSelector } from "react-redux";
+import { getCartItemsFromLocalStorageAction } from "../../../redux/slices/cart/cartSlices";
+import { useLocation } from "react-router-dom";
+import { placeOrderAction } from "../../../redux/slices/orders/ordersSlices";
+import { getUserProfileAction } from "../../../redux/slices/users/usersSlice";
+import LoadingComponent from "../../LoadingComp/LoadingComponent";
+import ErrorMsg from "../../ErrorMsg/ErrorMsg";
+import SuccessMsg from "../../SuccessMsg/SuccessMsg";
 
 export default function OrderPayment() {
-  //---get cart items from store---
-  const { cartItems } = [];
-
+  //get data from location
+  const location = useLocation();
+  const {sumTotalPrice} = location.state;
   const calculateTotalDiscountedPrice = () => {};
 
-  //create order submit handler
-  const createOrderSubmitHandler = (e) => {
-    e.preventDefault();
-  };
+  //dispatch
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getCartItemsFromLocalStorageAction());
+  }, [dispatch]);
 
+  //get cart items from store
+  const { cartItems } = useSelector((state) => state?.carts);
+
+  //user profile
+  useEffect(()=>{
+    dispatch(getUserProfileAction());
+  },[dispatch]);
+  const{loading,error,profile} = useSelector(state=>state?.users);
+  const user = profile?.user;
+  //place order action
+  //get shipping address
+  const shippingAddress = user?.shippingAddress;
+  const placeOrderHandler = ()=>{
+    dispatch(placeOrderAction({
+      shippingAddress, 
+      orderItems:cartItems,
+      totalPrice: sumTotalPrice,
+    }));
+   
+  };
+  const{loading: orderLoading,error: orderErr,} = useSelector(state=>state?.orders);
+  
   return (
+    <>
+    {orderErr && <ErrorMsg message={orderErr?.message} />}
     <div className="bg-gray-50">
       <main className="mx-auto max-w-7xl px-4 pt-16 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:max-w-none">
@@ -38,8 +72,8 @@ export default function OrderPayment() {
                     <li key={product._id} className="flex py-6 px-4 sm:px-6">
                       <div className="flex-shrink-0">
                         <img
-                          src={product.imageSrc}
-                          alt={product.imageAlt}
+                          src={product.image}
+                          alt={product._id}
                           className="w-20 rounded-md"
                         />
                       </div>
@@ -61,7 +95,7 @@ export default function OrderPayment() {
 
                         <div className="flex flex-1 items-end justify-between pt-2">
                           <p className="mt-1 text-sm font-medium text-gray-900">
-                            $ {product?.discountedPrice} X {product?.qty}
+                            $ {product?.price} X {product?.qty} = ${product?.totalPrice}
                           </p>
                         </div>
                       </div>
@@ -76,17 +110,17 @@ export default function OrderPayment() {
                   <div className="flex items-center justify-between border-t border-gray-200 pt-6">
                     <dt className="text-base font-medium">Sub Total</dt>
                     <dd className="text-base font-medium text-gray-900">
-                      $ {calculateTotalDiscountedPrice()}
+                      $ {sumTotalPrice}.00
                     </dd>
                   </div>
                 </dl>
 
                 <div className="border-t border-gray-200 py-6 px-4 sm:px-6">
-                  <button
-                    onClick={createOrderSubmitHandler}
+                  {orderLoading ? <LoadingComponent/>:<button
+                    onClick={placeOrderHandler}
                     className="w-full rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50">
-                    Confirm Payment - ${calculateTotalDiscountedPrice()}
-                  </button>
+                    Confirm Payment - ${sumTotalPrice}
+                  </button>}
                 </div>
               </div>
             </div>
@@ -94,5 +128,6 @@ export default function OrderPayment() {
         </div>
       </main>
     </div>
+    </>
   );
 }

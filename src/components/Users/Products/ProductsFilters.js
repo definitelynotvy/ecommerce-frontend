@@ -20,7 +20,7 @@ import { useSearchParams} from "react-router-dom";
 import baseURL from "../../../utils/baseURL";
 import { fetchProductsAction } from "../../../redux/slices/products/productSlices";
 import { fetchBrandsAction } from "../../../redux/slices/categories/brandsSlice";
-import { fetchColorsAction } from "../../../redux/slices/categories/colorsSclice";
+import { fetchColorsAction } from "../../../redux/slices/categories/colorsSlice";
 import Loading from "react-loading";
 import LoadingComponent from "../../LoadingComp/LoadingComponent";
 import ErrorMsg from "../../ErrorMsg/ErrorMsg";

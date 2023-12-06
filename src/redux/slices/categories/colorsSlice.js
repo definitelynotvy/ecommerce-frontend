@@ -18,6 +18,7 @@ const initialState={
 export const createColorAction = createAsyncThunk(
     'color/create',
     async(name, {rejectWithValue, getState, dispatch})=>{
+        
         try{
             //make request
             const token =getState().users?.userAuth?.userInfo?.token;
@@ -54,7 +55,8 @@ export const fetchColorsAction = createAsyncThunk(
 );
 //slice
 const colorsSlice = createSlice({
-    name:"brands",
+
+    name:"colors",
     initialState,
     extraReducers:(builder)=>{
         //create
@@ -80,25 +82,25 @@ const colorsSlice = createSlice({
         builder.addCase(fetchColorsAction.fulfilled,(state,action)=>{
             state.loading=false;
             state.colors=action.payload;
-            state.isAdded=true;
+           
         });
         builder.addCase(fetchColorsAction.rejected,(state,action)=>{
             state.loading=false;
             state.colors=null;
-            state.isAdded=false;
             state.error=action.payload;
         });
         //reset err action
         builder.addCase(resetErrAction.pending,(state,action)=>{
-            state.isAdded=false;
+            state.isAdded=false;  
             state.error=null;
         });
         //reset success action
         builder.addCase(resetSuccessAction.pending,(state,action)=>{
-            state.isAdded=false;
-            state.error=null;
+            state.isAdded=false;   
+            state.error=null;   
         });
-    },
+
+    }
 });
 
 //generate the reducer

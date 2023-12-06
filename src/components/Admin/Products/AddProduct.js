@@ -112,7 +112,6 @@ export default function AddProduct() {
   //onSubmit
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    console.log(fileErrs);
     //dispatch
     dispatch(
       createProductAction({
@@ -289,7 +288,7 @@ export default function AddProduct() {
                         </label>
                       </div>
                       <p className="text-xs text-gray-500">
-                        PNG, JPG, GIF up to 10MB
+                        PNG, JPG, GIF up to 1MB
                       </p>
                     </div>
                   </div>

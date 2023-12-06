@@ -2,13 +2,30 @@ import { Link } from "react-router-dom";
 import ErrorMsg from "../../ErrorMsg/ErrorMsg";
 import LoadingComponent from "../../LoadingComp/LoadingComponent";
 import NoDataFound from "../../NoDataFound/NoDataFound";
-
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import baseURL from "../../../utils/baseURL";
+import { fetchProductsAction } from "../../../redux/slices/products/productSlices";
 export default function ManageStocks() {
-  //Selector
-  let products, loading, error;
-
   //delete product handler
   const deleteProductHandler = (id) => {};
+  let productUrl = `${baseURL}/products`;
+   //dispatch
+   const dispatch = useDispatch();
+   useEffect(() => {
+     dispatch(
+       fetchProductsAction({
+         url: productUrl,
+       })
+     );
+   }, [dispatch]);
+   //get data from store
+   const {
+     products: { products },
+     loading,
+     error,
+   } = useSelector((state) => state?.products);
+  
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
@@ -96,7 +113,7 @@ export default function ManageStocks() {
                             <div className="h-10 w-10 flex-shrink-0">
                               <img
                                 className="h-10 w-10 rounded-full"
-                                src={product?.image}
+                                src={product?.images[0]}
                                 alt={product?.name}
                               />
                             </div>
@@ -119,7 +136,7 @@ export default function ManageStocks() {
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {product?.isOutOfStock ? (
+                          {product?.qtyLeft < 0 ? (
                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                               Out of Stock
                             </span>

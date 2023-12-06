@@ -10,7 +10,7 @@ const initialState={
     error: null,
     isAdded: false,
     isUpdated: false,
-   
+    stats: null,
 };
 
 //create product action
@@ -70,6 +70,26 @@ export const fetchOrdersAction = createAsyncThunk(
     }
 );
 
+//Get orders stats
+export const OrdersStatsAction = createAsyncThunk(
+    "orders/statistics",
+    async (payload, { rejectWithValue, getState, dispatch }) => {
+      try {
+        const token = getState()?.users?.userAuth?.userInfo?.token;
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+  
+        const { data } = await axios.get(`${baseURL}/orders/sales/stats`, config);
+        return data;
+      } catch (error) {
+        return rejectWithValue(error?.response?.data);
+      }
+    }
+  );
+
 //fetch product action
 export const fetchOrderAction = createAsyncThunk(
     "orders/details",
@@ -90,6 +110,34 @@ export const fetchOrderAction = createAsyncThunk(
         return rejectWithValue(error?.response?.data);
       }
     }
+);
+
+//Update order
+export const updateOrderAction = createAsyncThunk(
+  "order/update-order",
+  async (payload, { rejectWithValue, getState, dispatch }) => {
+    try {
+      const { status, id } = payload;
+      //token
+      const token = getState()?.users?.userAuth?.userInfo?.token;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      //request
+      const { data } = await axios.put(
+        `${baseURL}/orders/update/${id}`,
+        {
+          status,
+        },
+        config
+      );
+      return data;
+    } catch (error) {
+      return rejectWithValue(error?.response?.data);
+    }
+  }
 );
 
 //slice
@@ -126,7 +174,32 @@ const ordersSlice = createSlice({
             state.orders = null;
             state.error = action.payload;
         });
-
+        //stats
+        builder.addCase(OrdersStatsAction.pending, (state) => {
+            state.loading = true;
+        });
+        builder.addCase(OrdersStatsAction.fulfilled, (state, action) => {
+            state.loading = false;
+            state.stats = action.payload;
+        });
+        builder.addCase(OrdersStatsAction.rejected, (state, action) => {
+            state.loading = false;
+            state.stats = null;
+            state.error = action.payload;
+        });
+        //update order
+        builder.addCase(updateOrderAction.pending, (state) => {
+          state.loading = true;
+        });
+        builder.addCase(updateOrderAction.fulfilled, (state, action) => {
+          state.loading = false;
+          state.order = action.payload;
+        });
+        builder.addCase(updateOrderAction.rejected, (state, action) => {
+          state.loading = false;
+          state.order = null;
+          state.error = action.payload;
+        });
         //fetch single
         builder.addCase(fetchOrderAction.pending, (state) => {
             state.loading = true;

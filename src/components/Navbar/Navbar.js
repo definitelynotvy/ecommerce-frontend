@@ -12,6 +12,10 @@ import logo from "./logo3.png";
 import { useDispatch,useSelector } from "react-redux";
 import { fetchCategoryAction } from "../../redux/slices/categories/categoriesSlice";
 import { getCartItemsFromLocalStorageAction } from "../../redux/slices/cart/cartSlices";
+import { logoutAction } from "../../redux/slices/users/usersSlice";
+import { fetchCouponsAction } from "../../redux/slices/coupons/couponsSlice";
+
+
 export default function Navbar() {
   //dispatch
   const dispatch = useDispatch();
@@ -39,6 +43,23 @@ export default function Navbar() {
   const user = JSON.parse(localStorage.getItem("userInfo"));
 
   const isLoggedIn = user?.token ? true:false;
+  //logout handler
+  const logoutHandler = () => {
+    dispatch(logoutAction());
+    //reload
+    window.location.reload();
+  };
+
+  //coupons
+  useEffect(() => {
+    dispatch(fetchCouponsAction());
+  }, [dispatch]);
+  //get coupons
+  const { coupons, loading, error } = useSelector((state) => state?.coupons);
+  //Get current coupon
+  const currentCoupon = coupons
+    ? coupons?.coupons?.[coupons?.coupons?.length - 1]
+    : console.log(currentCoupon);
 
   return (
     <div className="bg-white">
@@ -152,33 +173,52 @@ export default function Navbar() {
 
       <header className="relative z-10">
         <nav aria-label="Top">
-          {/* Top navigation  desktop*/}
-          <div className="bg-gray-900">
-            <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-              <p className="flex-1 text-center text-sm font-medium text-white lg:flex-none">
-                Get free delivery on orders over $100
-              </p>
+          {/* Coupon navbar */}
+          {!currentCoupon?.isExpired && (
+            <div className="bg-yellow-600">
+              <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                <p
+                  style={{ textAlign: "center", width: "100%" }}
+                  className="flex-1 text-center text-sm font-medium text-white lg:flex-none"
+                >
+                  {currentCoupon
+                    ? `${currentCoupon?.code}- ${currentCoupon?.discount}% , ${currentCoupon?.daysLeft}`
+                    : "No Flash sale at moment"}
+                </p>
 
-              <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
-                {!isLoggedIn && (
-                  <>
-                  <Link
-                  to="/register"
-                  className="text-sm font-medium text-white hover:text-gray-100">
-                  Create an account
-                </Link>
-                <span className="h-6 w-px bg-gray-600" aria-hidden="true" />
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-white hover:text-gray-100">
-                  Sign in
-                </Link>
-                  </>
-                )}
+                <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6"></div>
               </div>
             </div>
-          </div>
-
+          )}
+          {/* Top navigation  desktop*/}
+          {!isLoggedIn && (
+            <div className="bg-gray-800">
+              <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
+                  {!isLoggedIn && (
+                    <>
+                      <Link
+                        to="/register"
+                        className="text-sm font-medium text-white hover:text-gray-100"
+                      >
+                        Create an account
+                      </Link>
+                      <span
+                        className="h-6 w-px bg-gray-600"
+                        aria-hidden="true"
+                      />
+                      <Link
+                        to="/login"
+                        className="text-sm font-medium text-white hover:text-gray-100"
+                      >
+                        Sign in
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           {/* Deskto Navigation */}
           <div className="bg-white">
             <div className="border-b border-gray-200">
@@ -202,23 +242,26 @@ export default function Navbar() {
                       <div className="flex h-full justify-center space-x-8">
                         {categoriesToDisplay?.length <= 0 ? (
                           <>
-                            <a
-                              href={`${baseURL}/products?category=clothing`}
-                              className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800">
-                              Clothing...
-                            </a>
+                            <Link
+                              to="/products?category=clothing"
+                              className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
+                            >
+                              Clothing
+                            </Link>
 
-                            <a
-                              href="/"
-                              className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800">
+                            <Link
+                              to="/"
+                              className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
+                            >
                               Men
-                            </a>
+                            </Link>
 
-                            <a
-                              href="/"
-                              className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800">
+                            <Link
+                              to="/"
+                              className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
+                            >
                               Women
-                            </a>
+                            </Link>
                           </>
                         ) : (
                           categoriesToDisplay?.map((category) => {
@@ -227,7 +270,8 @@ export default function Navbar() {
                                 <Link
                                   key={category?._id}
                                   to={`/products-filters?category=${category?.name}`}
-                                  className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800">
+                                  className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
+                                >
                                   {category?.name}
                                 </Link>
                               </>
@@ -243,7 +287,8 @@ export default function Navbar() {
                     <button
                       type="button"
                       className="-ml-2 rounded-md bg-white p-2 text-gray-400"
-                      onClick={() => setMobileMenuOpen(true)}>
+                      onClick={() => setMobileMenuOpen(true)}
+                    >
                       <span className="sr-only">Open menu</span>
                       <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                     </button>
@@ -259,18 +304,45 @@ export default function Navbar() {
 
                   {/* login profile icon mobile */}
                   <div className="flex flex-1 items-center justify-end">
+                    {user?.userFound?.isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="inline-flex items-center rounded-md border border-transparent bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
                     <div className="flex items-center lg:ml-8">
                       <div className="flex space-x-8">
                         {isLoggedIn && (
-                          <>
                           <div className="flex">
-                          <Link
-                            to="/customer-profile"
-                            className="-m-2 p-2 text-gray-400 hover:text-gray-500">
-                            <UserIcon className="h-6 w-6" aria-hidden="true" />
-                          </Link>
-                        </div>
-                          </>
+                            <Link
+                              to="/customer-profile"
+                              className="-m-2 p-2 mr-2 text-gray-400 hover:text-gray-500"
+                            >
+                              <UserIcon
+                                className="h-6 w-6"
+                                aria-hidden="true"
+                              />
+                            </Link>
+                            {/* logout */}
+                            <button onClick={logoutHandler}>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="w-6 h-6 text-gray-500"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                         )}
                       </div>
 
@@ -282,15 +354,14 @@ export default function Navbar() {
                       <div className="flow-root">
                         <Link
                           to="/shopping-cart"
-                          className="group -m-2 flex items-center p-2">
+                          className="group -m-2 flex items-center p-2"
+                        >
                           <ShoppingCartIcon
                             className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
                             aria-hidden="true"
                           />
                           <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">
-                            {cartItems?.length > 0
-                              ? cartItems.length
-                              : 0}
+                            {cartItems?.length > 0 ? cartItems?.length : 0}
                           </span>
                         </Link>
                       </div>

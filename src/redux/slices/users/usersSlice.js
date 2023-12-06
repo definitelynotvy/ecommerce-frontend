@@ -107,6 +107,16 @@ export const loginUserAction = createAsyncThunk(
     }
   );
 
+    //logout action
+  export const logoutAction = createAsyncThunk(
+    "users/logout",
+    async (payload, { rejectWithValue, getState, dispatch }) => {
+      //get token
+      localStorage.removeItem("userInfo");
+      return true;
+    }
+  );
+
   //user slice
   const usersSlice = createSlice({
     name: "users",
@@ -136,6 +146,10 @@ export const loginUserAction = createAsyncThunk(
         builder.addCase(registerUserAction.rejected, (state, action) => {
           state.error= action.payload;
           state.loading = false;
+        });
+        //logout
+        builder.addCase(logoutAction.fulfilled, (state, action) => {
+          state.userAuth.userInfo = null;
         });
         //profile
         builder.addCase(getUserProfileAction.pending, (state, action) => {

@@ -6,16 +6,29 @@ import { useParams } from "react-router-dom";
 import LoadingComponent from "../../LoadingComp/LoadingComponent";
 import ErrorMsg from "../../ErrorMsg/ErrorMsg";
 import SuccessMsg from "../../SuccessMsg/SuccessMsg";
+import { fetchCouponAction, updateCouponAction } from "../../../redux/slices/coupons/couponsSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function UpdateCoupon() {
-  //---Fetch coupon ---
-  const { coupon, loading, error, isUpdated } = {};
-  //get the coupon
+  //get coupon from url
   const { code } = useParams();
+  //dispatch
+  const dispatch = useDispatch();
+
+  //---Fetch coupon ---
+  useEffect(() => {
+    dispatch(fetchCouponAction(code));
+  }, [code, dispatch]);
+  const { coupon, loading, error, isUpdated } = useSelector(
+    (state) => state?.coupons
+  );
+  //get the coupon
+  console.log(coupon?.coupon?._id);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
   //---handle form data---
+  
   const [formData, setFormData] = useState({
     code: coupon?.coupon?.code,
     discount: coupon?.coupon?.discount,
@@ -28,7 +41,15 @@ export default function UpdateCoupon() {
   //onHandleSubmit---
   const onHandleSubmit = (e) => {
     e.preventDefault();
-
+    dispatch(
+      updateCouponAction({
+        id: coupon?.coupon?._id,
+        code: formData?.code,
+        discount: formData?.discount,
+        startDate,
+        endDate,
+      })
+    );
     //reset
     setFormData({
       code: "",

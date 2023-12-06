@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUserAction } from "../../../redux/slices/users/usersSlice";
 import SuccessMsg from "../../SuccessMsg/SuccessMsg";
@@ -24,24 +24,21 @@ const Login = () => {
     e.preventDefault();
     //console.log(email, password);
     dispatch(loginUserAction({ email, password }));
+    //reload
+    // window.location.href ="/";
   };
 
   //get data from store
-  const { error, loading, userInfor } = useSelector(
+  const { error, loading, userInfo } = useSelector(
     (state) => state?.users?.userAuth
   );
-   //redirect
-  //  if(userInfor?.userFound?.isAdmin) {
-  //   window.location.href = "/admin";
-  //  }else{
-  //   window.location.href = "/customer-profile";
-  //  }
+  
 
-  //  useEffect(() => {
-  //   if (userInfo?.userFound) {
-  //     window.location.href = "/";
-  //   }
-  // }, [userInfo]);
+   useEffect(() => {
+    if (userInfo?.userFound) {
+      window.location.href = "/";
+    }
+  }, [userInfo]);
 
   //select store data
   // const { loading, userAuth } = {};

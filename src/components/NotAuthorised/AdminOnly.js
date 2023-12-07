@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "../Navbar/logo3.png";
+import logo from "../Navbar/new-logo.png";
 
 export default function AdminOnly() {
   return (

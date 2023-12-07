@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 import baseURL from "../../utils/baseURL";
-import logo from "./logo3.png";
+import logo from "./new-logo.png";
 import { useDispatch,useSelector } from "react-redux";
 import { fetchCategoryAction } from "../../redux/slices/categories/categoriesSlice";
 import { getCartItemsFromLocalStorageAction } from "../../redux/slices/cart/cartSlices";
@@ -182,7 +182,7 @@ export default function Navbar() {
                   className="flex-1 text-center text-sm font-medium text-white lg:flex-none"
                 >
                   {currentCoupon
-                    ? `${currentCoupon?.code}- ${currentCoupon?.discount}% , ${currentCoupon?.daysLeft}`
+                    ? `${currentCoupon?.code} - ${currentCoupon?.discount}% , ${currentCoupon?.daysLeft}`
                     : "No Flash sale at moment"}
                 </p>
 

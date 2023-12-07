@@ -152,20 +152,14 @@ const AddShippingAddress = () => {
               Country
             </label>
             <div className="mt-1">
-              <select
+              <input
                 id="country"
                 name="country"
                 autoComplete="country"
                 value={formData.country}
                 onChange={onChange}
-                className="block w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                <option value="USA">United States</option>
-                <option value="CAN">Canada</option>
-                <option value="MEX">Mexico</option>
-                <option value="Ghana">Ghana</option>
-                <option value="Nigeria">Nigeria</option>
-                <option value="South Africa">South Africa</option>
-              </select>
+                className="block w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
             </div>
           </div>
 

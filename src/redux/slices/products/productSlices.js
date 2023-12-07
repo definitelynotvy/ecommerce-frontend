@@ -6,7 +6,8 @@ const {createAsyncThunk, createSlice} = require("@reduxjs/toolkit");
 // initialState
 const initialState={
     products:[],
-    product:{}, loading: false,
+    product:{}, 
+    loading: false,
     error: null,
     isAdded: false,
     isUpdated: false,
@@ -173,15 +174,17 @@ const productSlice = createSlice({
         });
         builder.addCase(createProductAction.fulfilled,(state,action)=>{
             state.loading=false;
-            state.products=action.payload;
+            state.product=action.payload;
             state.isAdded=true;
         });
+      
         builder.addCase(createProductAction.rejected,(state,action)=>{
             state.loading=false;
-            state.products=null;
+            state.product=null;
             state.isAdded=false;
             state.error=action.payload;
         });
+        
         //update product
         builder.addCase(updateProductAction.pending, (state) => {
           state.loading = true;
@@ -204,12 +207,12 @@ const productSlice = createSlice({
         builder.addCase(fetchProductsAction.fulfilled, (state, action) => {
             state.loading = false;
             state.products = action.payload;
-            state.isAdded = true;
+          
         });
         builder.addCase(fetchProductsAction.rejected, (state, action) => {
             state.loading = false;
             state.products = null;
-            state.isAdded = false;
+         
             state.error = action.payload;
         });
 
@@ -220,23 +223,22 @@ const productSlice = createSlice({
         builder.addCase(fetchProductAction.fulfilled, (state, action) => {
             state.loading = false;
             state.product = action.payload;
-            state.isAdded = true;
+          
         });
         builder.addCase(fetchProductAction.rejected, (state, action) => {
             state.loading = false;
             state.product = null;
-            state.isAdded = false;
             state.error = action.payload;
         });
-
+        //reset success
+        builder.addCase(resetSuccessAction.pending, (state, action) => {
+          state.isAdded = false;
+        });
         //reset error
         builder.addCase(resetErrAction.pending, (state, action) => {
             state.error = null;
         });
-        //reset success
-        builder.addCase(resetSuccessAction.pending, (state, action) => {
-            state.isAdded = false;
-        });
+       
     },
 });
 
